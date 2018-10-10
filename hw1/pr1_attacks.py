@@ -45,17 +45,22 @@ def experiment(n, sigma, m, queries, attacker_guess):
     def answers(Q, x, Y):
         return (1/n) * Q.dot(x) + Y
     results = []
-    print("Running {0:d} iterations of experiment with n={1:d} and sigma={2:f}...".format(REPETITIONS, n, sigma))
-    for _ in range(REPETITIONS):
-        x = rand_nbits(n)
-        Y = sample_normal(sigma, size=m)
-        a = answers(Q, x, Y)
-        xhat = attacker_guess(Q, a)
-        result = (1/n) * np.count_nonzero(x == xhat) # fraction of correct guesses
-        results.append(result)
-    mean = np.mean(results)
-    std = np.std(results)
+    print("Running {0:d} iterations of experiment with n={1:d}, sigma={2:f}, m={3:d}...".format(REPETITIONS, n, sigma, m))
+    try:
+        for _ in range(REPETITIONS):
+            x = rand_nbits(n)
+            Y = sample_normal(sigma, size=m)
+            a = answers(Q, x, Y)
+            xhat = attacker_guess(Q, a)
+            result = (1/n) * np.count_nonzero(x == xhat) # fraction of correct guesses
+            results.append(result)
+        mean = np.mean(results)
+        std = np.std(results)
     print("    Mean fraction of correct results: {0:f}\n    Standard deviation of fraction of correct results: {1:f}".format(mean, std))
+    except MemoryError e:
+        print(str(e))
+        mean = None
+        std = None
     return (mean, std)
 
 
@@ -105,15 +110,28 @@ def test_evaluate_hadamard():
     print(hadamard_experiment(8, 0.25))
     print(hadamard_experiment(2048, 0.25))
 
+def read_experiment_csv_dict(filename):
+    """Returns a list of data points read from a csv into a dict (n,sigma,m) -> (mean,stdev,reps)"""
+    to_ret = {}
+    with open(filename, 'r') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            to_ret[(int(row["n"]), float(row["sigma"]), int(row["m"]))] = (float(row["mean"]),
+                float(row["stdev"]), int(row["repetitions"]))
+    return to_ret
+
 def generate_experiment_csv(filename, n_list, sigma_list_gen, m_list_gen, experiment):
-    with open(filename, 'w') as csvfile:
+    already_done = read_experiment_csv_dict(filename)
+    with open(filename, 'a') as csvfile:
         fw = csv.writer(csvfile, delimiter=',')
-        fw.writerow(["n","sigma","m","mean","stdev","repetitions"])
+        if len(already_done) == 0:
+            fw.writerow(["n","sigma","m","mean","stdev","repetitions"])
         for n in n_list:
             for sigma in sigma_list_gen(n):
                 for m in m_list_gen(n):
-                    mean, std = experiment(n=n, sigma=sigma, m=m)
-                    fw.writerow([n, sigma, m, mean, std, REPETITIONS])
+                    if (n,sigma,m) not in already_done:
+                        mean, std = experiment(n=n, sigma=sigma, m=m)
+                        fw.writerow([n, sigma, m, mean, std, REPETITIONS])
 
 
 #test_hadamard()
