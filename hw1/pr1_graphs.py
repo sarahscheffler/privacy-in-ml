@@ -38,9 +38,9 @@ def graph_hadamard(data, graph_filename):
         sub_data = list(filter(lambda d: d[0] == n, data))
         sub_data_xs = list(map(lambda d: d[1], sub_data))
         sub_data_ys = list(map(lambda d: d[3], sub_data))
-        sub_data_ci = list(map(lambda d: d[4], sub_data))
+        sub_data_sd = list(map(lambda d: d[4], sub_data))
 
-        plt.plot(sub_data_xs, sub_data_ys, marker=MARKERS[counter], label="n={0:d}".format(n))
+        plt.errorbar(sub_data_xs, sub_data_ys, yerr=sub_data_sd, marker=MARKERS[counter], label="n={0:d}".format(n))
         counter += 1
 
     plt.legend()
