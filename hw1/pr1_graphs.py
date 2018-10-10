@@ -24,7 +24,7 @@ def read_experiment_csv(filename):
 def graph_hadamard(data, graph_filename):
     fig = plt.figure()
     ax = fig.add_subplot(111)
-    ax.set_xlabel("sigma")
+    ax.set_xlabel("$\sigma$")
     ax.set_ylabel("fraction of rows reconstructed")
     ax.set_xscale("log")
     ax.set_xticks(SIGMAS)
