@@ -56,7 +56,7 @@ def experiment(n, sigma, m, queries, attacker_guess):
             results.append(result)
         mean = np.mean(results)
         std = np.std(results)
-    print("    Mean fraction of correct results: {0:f}\n    Standard deviation of fraction of correct results: {1:f}".format(mean, std))
+        print("    Mean fraction of correct results: {0:f}\n    Standard deviation of fraction of correct results: {1:f}".format(mean, std))
     except MemoryError e:
         print(str(e))
         mean = None
