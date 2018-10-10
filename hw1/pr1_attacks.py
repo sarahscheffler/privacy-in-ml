@@ -77,7 +77,7 @@ def random_query_experiment(n, sigma, m):
 
     def attacker_guess(B, a):
         """Compute argmin_y of ||a-(1/b)By||_2, then return the rounded result"""
-        return np.fromiter((z > 0.5 for z in np.linalg.lstsq((1/n)*B, a, rcond=None)[0]), int)
+        return np.fromiter((z > 0.5 for z in np.linalg.lstsq((1/n)*B, a)[0]), int)
     return experiment(n, sigma, m, B, attacker_guess)
 
 
