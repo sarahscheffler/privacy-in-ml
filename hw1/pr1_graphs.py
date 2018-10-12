@@ -49,5 +49,3 @@ def graph_hadamard(data, graph_filename):
 
 graph_hadamard(read_experiment_csv("hadamard_results.csv"), "hadamard_graph.png")
 
-            
-            
