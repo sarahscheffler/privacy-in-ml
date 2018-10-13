@@ -9,7 +9,7 @@ from math import ceil
 import numpy as np
 
 REPETITIONS = int(20)
-N_LIST = [100, 5000, 1000, 5000]
+N_LIST = [100, 500, 1000, 5000]
 
 ########## Helper functions ########## 
 
@@ -18,7 +18,8 @@ def rand_nbits(n: int):
     n = int(n)
     return np.random.randint(2, size=n)
 
-def experiment(n, attacker_guess, with_aux_info=False):
+
+def experiment(n, with_aux_info=False):
     """Taking in a matrix of queries and a functor for attacker strategy, determine attacker success rate"""
     def answers(x):
         """Return noisy counter"""
@@ -52,71 +53,100 @@ def experiment(n, attacker_guess, with_aux_info=False):
         mean = None
         std = None
         print("    Experiment failed due to memory error.")
-
     return (mean, std, reps)
 
-def no_aux_info_experiment(n):
-    def attacker_guess(a, aux_info=None):
-        return a
-    experiment(n, attacker_guess)
+def experiment_with_aux_info(n):
+    return experiment(n, with_aux_info = True)
 
-no_aux_info_experiment(8)
+# this algorithm only relies on the answers a and the optional aux_input
+def attacker_guess(a, aux_info=None):
+    """Guess the values for x based on the noisy counter a and optional aux_info.
+       Uses three principles:
+           1. At each step, if a[i] = a[i-1]+2, then we know x[i] = 1
+           2. At each step, if a[i] = a[i-1]-1, then we know x[i] = 0
+           3. At each step, cumsum(x[i])+1 >= a[i] >= cumsum(x[i])
+       The aux_info just modifies our original guess
+    """
+    VERBOSE = False # To see the reasoning for modifying individual guesses, set this to True
+    n = len(a)
+    xhat = aux_info if aux_info is not None else rand_nbits(n) # start with either random guesses or aux info
+    if VERBOSE:
+        counter = 0
+        print(counter, xhat, "start")
+    # At each step, if a[i] = a[i-1]+2, then we know x[i] = 1
+    # At each step, if a[i] = a[i-1]-1, then we know x[i] = 0
+    if a[0] == 2 and xhat[0] != 1: # handle index 0 separately
+        xhat[0] = 1
+        if VERBOSE:
+            counter += 1
+            print(counter, xhat, "2=>1")
+    elif a[0] == 0 and xhat[0] != 0:
+        xhat[0] = 0
+        if VERBOSE:
+            counter += 1
+            print(counter, xhat, "-1=>0")
+    for i in range(1, n):
+        if a[i] == 2 + a[i-1] and xhat[i] != 1:
+            xhat[i] = 1
+            if VERBOSE:
+                counter += 1
+                print(counter, xhat, "2=>1")
+        elif a[i] == a[i-1] - 1 and xhat[i] != 0:
+            xhat[i] = 0
+            if VERBOSE:
+                counter += 1
+                print(counter, xhat, "-1=>0")
 
+    # At each step, cumsum(x[i])+1 >= a[i] >= cumsum(x[i]) (by definition)
+    complete = False
+    while not complete:
+        cumsum = np.cumsum(xhat)
+        for i in range(n):
+            if a[i] < cumsum[i]:
+                for j in range(i, -1, -1):
+                    if xhat[j] != 0:
+                        xhat[j] = 0
+                        break
+                if VERBOSE:
+                    counter += 1
+                    print(counter, xhat, "ai<cs[{0:d}]".format(i))
+                break
+            if a[i] > cumsum[i] + 1:
+                for j in range(i, -1, -1):
+                    if xhat[j] != 1:
+                        xhat[j] = 1
+                        break
+                if VERBOSE:
+                    counter += 1
+                    print(counter, xhat, "ai>cs[{0:d}]+1".format(i))
+                break
+            if i==n-1: # if we make it to the end of this loop without changing anything, we're done
+                complete = True
+    return xhat
 
+def read_experiment_csv_dict(filename):
+    """Returns a list of data points read from a csv into a dict (n,sigma,m) -> (mean,stdev,reps)"""
+    to_ret = {}
+    with open(filename, 'r') as csvfile:
+        reader = csv.DictReader(csvfile)
+        for row in reader:
+            to_ret[int(row["n"])] = (float(row["mean"]),
+                float(row["stdev"]), int(row["repetitions"]))
+    return to_ret
 
-########## Hadamard attack implementation ########## 
-#
-#def hadamard_experiment(n, sigma, m=None):
-    #"""Returns (mean, std) of fraction of correct results for Hadamard attack with this n and sigma"""
-    #H = hadamard(n)
-    #def attacker_guess(H, a):
-        #"""attacker guess = H*a rounded to {0,1}"""
-        #return np.fromiter((z > 0.5 for z in H.dot(a)), int)
-    ##return experiment(n, sigma, n, H, attacker_guess)
-#
-#
-#def random_query_experiment(n, sigma, m):
-    #"""Returns (mean, std) of fraction of correct results for random query attack with this n, sigma, and m"""
-#
-    #B = np.random.randint(2, size=(m,n)) # random (m x n) matrix with elems in {0,1}
-#
-    #def attacker_guess(B, a):
-        #"""Compute argmin_y of ||a-(1/b)By||_2, then return the rounded result"""
-        #return np.fromiter((z > 0.5 for z in np.linalg.lstsq((1/n)*B, a)[0]), int)
-    #return experiment(n, sigma, m, B, attacker_guess)
-#
-#
-#def read_experiment_csv_dict(filename):
-    #"""Returns a list of data points read from a csv into a dict (n,sigma,m) -> (mean,stdev,reps)"""
-    #to_ret = {}
-    #with open(filename, 'r') as csvfile:
-        #reader = csv.DictReader(csvfile)
-        #for row in reader:
-            #to_ret[(int(row["n"]), float(row["sigma"]), int(row["m"]))] = (float(row["mean"]),
-                #float(row["stdev"]), int(row["repetitions"]))
-    #return to_ret
-#
-#def generate_experiment_csv(filename, n_list, sigma_list_gen, m_list_gen, experiment):
-    #already_done = read_experiment_csv_dict(filename)
-    #with open(filename, 'a') as csvfile:
-        #fw = csv.writer(csvfile, delimiter=',')
-        #if len(already_done) == 0:
-            #fw.writerow(["n","sigma","m","mean","stdev","repetitions"])
-        #for n in n_list:
-            #for sigma in sigma_list_gen(n):
-                #for m in m_list_gen(n):
-                    #if (n,sigma,m) not in already_done:
-                        #mean, std = experiment(n=n, sigma=sigma, m=m)
-                        #fw.writerow([n, sigma, m, mean, std, REPETITIONS])
-#
-#
-#
-#
-##test_hadamard()
-##test_rand_nbits()
-##test_evaluate_hadamard()
-##generate_experiment_csv("hadamard_results.csv", N_LIST, SIGMA_LIST_GEN, lambda _: [None], hadamard_experiment)
-#generate_experiment_csv("random_query_results.csv", N_LIST, SIGMA_LIST_GEN, M_LIST_GEN, random_query_experiment)
+def generate_experiment_csv(filename, n_list, experiment):
+    already_done = read_experiment_csv_dict(filename)
+    with open(filename, 'a') as csvfile:
+        fw = csv.writer(csvfile, delimiter=',')
+        if len(already_done) == 0:
+            fw.writerow(["n","mean","stdev","repetitions"])
+        for n in n_list:
+            if n not in already_done:
+                mean, std, reps = experiment(n)
+                fw.writerow([n, mean, std, reps])
+
+generate_experiment_csv("no_aux_info.csv", N_LIST, experiment)
+generate_experiment_csv("with_aux_info.csv", N_LIST, experiment_with_aux_info)
 
 
 
