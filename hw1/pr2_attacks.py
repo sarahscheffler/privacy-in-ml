@@ -61,11 +61,11 @@ def experiment_with_aux_info(n):
 # this algorithm only relies on the answers a and the optional aux_input
 def attacker_guess(a, aux_info=None):
     """Guess the values for x based on the noisy counter a and optional aux_info.
-       Uses three principles:
+       Uses four principles:
+           0. If we have aux_info, start with those initial guesses.  Else guess randomly.
            1. At each step, if a[i] = a[i-1]+2, then we know x[i] = 1
            2. At each step, if a[i] = a[i-1]-1, then we know x[i] = 0
            3. At each step, cumsum(x[i])+1 >= a[i] >= cumsum(x[i])
-       The aux_info just modifies our original guess
     """
     VERBOSE = False # To see the reasoning for modifying individual guesses, set this to True
     n = len(a)
