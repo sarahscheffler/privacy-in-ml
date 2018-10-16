@@ -1,0 +1,56 @@
+\documentclass{article}
+
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{enumerate}
+
+\newcommand{\trueavg}{\bar{b}}
+\newcommand{\sampavg}{\hat{t}}
+
+\title{fa18 cs591s1: Homework 1, Problem 3}
+\author{Sarah Scheffler}
+\date{\today}
+
+\begin{document}
+\maketitle
+\textbf{Collaborators: } none
+
+\section{Problems and Solutions}
+\begin{enumerate}[(a)]
+    \item Problem: read the notes \\
+        Solution: Notes have been read.
+    \item Problem: Say there are $n$ real numbers $a_1, \ldots, a_n$ in $[-1,1]$ with average $\bar{a}$.  We sample $k$
+        elements $s_1, \ldots, s_k$ from the list uniformly with replacement.  These have average $\hat{a}$.  
+        \begin{enumerate}[(i)]
+            \item For a given $\alpha$ and $\delta$, what should $k$ be to guarantee that $\vert \bar{a} - \hat{a} \vert \le \alpha$
+                with probability at least $(1-\delta)$? \\
+                Solution: First we must rescale the samples to within the $[0,1]$ interval so we can use Chernoff Bound 2.
+
+                We set $\trueavg_i = \frac{\bar{a}_i + 1}{2}$.  Notice that the distribution of the $\trueavg_i$ values in
+                $[0,1]$ is just a transformed version of the distribution of $\bar{a}_i$s, and notably, $\trueavg =
+                \frac{\bar{a}+1}{2}$.  Similarly, set $\sampavg_i = \frac{\hat{s}_i + 1}{2}$, and $\sampavg = \frac{\hat{a}
+                + 1}{2}$.
+
+                Note that if we define $error' = \vert \sampavg - \trueavg \vert$, then we have
+                \begin{align*}
+                    error &= \vert \hat{a} - \bar{a} \vert \\
+                        &= \vert (2\sampavg - 1) - (2\trueavg - 1) \vert \\
+                        &= 2\vert \sampavg - \trueavg \vert \\
+                        &= 2error'
+                \end{align*}
+                so for any $\alpha$, in order to maintain $error \le \alpha$, we must maintain $error' \le
+                \frac{\alpha}{2}$.  Let $\alpha' = \frac{\alpha}{2}$.
+
+                Now, according to the Sampling Theorem on page 6 of the notes, we know that for our $\sampavg_i$ samples
+                we should set 
+                \begin{align*}
+                    k &\ge \frac{2+\alpha'}{(\alpha')^2} \ln \frac{2}{\delta} \\
+                    &= \frac{2 + \alpha/2}{(\alpha/2)^2} \ln \frac{2}{\delta} \\
+                    &= \frac{8 + 2\alpha}{\alpha^2} \ln \frac{2}{\delta}
+                \end{align*}
+            \item Problem: 
+        \end{enumerate}
+\end{enumerate}
+
+\end{document}
