@@ -7,6 +7,7 @@
 
 \newcommand{\trueavg}{\bar{b}}
 \newcommand{\sampavg}{\hat{t}}
+\newcommand{\abs}[1]{\vert #1 \vert}
 
 \title{fa18 cs591s1: Homework 1, Problem 3}
 \author{Sarah Scheffler}
@@ -49,7 +50,46 @@
                     &= \frac{2 + \alpha/2}{(\alpha/2)^2} \ln \frac{2}{\delta} \\
                     &= \frac{8 + 2\alpha}{\alpha^2} \ln \frac{2}{\delta}
                 \end{align*}
-            \item Problem: 
+            \item Problem: Say we have a population of $n$ people, and we want to ask them $d$ questions with an answer
+                of 0 or 1.  We pick a uniformly random sample of $k$ people (with replacement) and ask them all the
+                questions.  We wish to show that for any $\alpha > 0$, it suffices to take $k = O(\frac{\log(d) +
+                \log(1/\delta)}{\alpha^2})$ samples such that with probability $1-\delta$, each of the sampled
+                proportions is within $\alpha$ of the proportion in the population.
+                
+            \item Let $x_1, \ldots, x_d$ be the ``actual'' proportions in the population of the results for
+                each of the $d$ questions.  Let $s_1, \ldots, s_d$ be the proportions of the sampled answers.
+
+                By the union bound, we know that 
+                \[Pr[\text{any }i \in \{1,\ldots,d\}\text{ has }\abs{s_i - x_i} >
+                \alpha] \le \sum_{i=1}^d Pr[\abs{s_i - x_i} > \alpha].\]
+                
+                By the two-sided Chernoff bound, we know that for any $0 \le \epsilon \le 1$: 
+                \begin{align*} 
+                    Pr[\abs{ k s_i - k x_i } \ge \epsilon x_i k] &\le 2\exp\left(\frac{-kx_i\epsilon^2}{2+\epsilon}\right) \\
+                    Pr[\abs{ s_i - x_i} \ge \alpha] &\le 2\exp\left( \frac{-kx_i\alpha^2/x_i^2}{2+\alpha/x_i} \right) \\
+                    &\le 2\exp\left( \frac{-k\alpha^2}{2x_i + \alpha} \right) \\
+                    &\le 2\exp\left( \frac{-k\alpha^2}{2 + \alpha} \right) \\
+                \end{align*}
+                where the last line is because $x_i \le 1$ (thus line 3 is at least as large as line 4)
+
+                We now zoom back out to the union bound step and plug in this value.  This gives us:
+                \begin{align*} Pr[\text{any }i \in \{1,\ldots,d\}\text{ has }\abs{s_i - x_i} >
+                    \alpha] &\le \sum_{i=1}^d 2\exp\left( \frac{-k\alpha^2}{2 + \alpha} \right)  \\
+                    &\le 2d\exp\left( \frac{-k\alpha^2}{2 + \alpha} \right) 
+                \end{align*}
+
+                Bounding this by $\delta$ gets us
+                \begin{align*}
+                    2d\exp\left( \frac{-k\alpha^2}{2+\alpha} \right) &\le \delta \\
+                    \frac{2d}{\delta} &\le \exp\left( \frac{k\alpha^2}{2+\alpha} \right) \\
+                    \ln \frac{2d}{\delta} &\le k\frac{\alpha^2}{2+\alpha} \\
+                    \ln \frac{2d}{\delta} &\le k\frac{\alpha^2}{2+\alpha} \\
+                    k &\ge \frac{2+\alpha}{\alpha^2} \ln \frac{2d}{\delta}
+                \end{align*}
+
+                Note that for all $0 \le \alpha \le 1$, we have $\frac{2+\alpha}{\alpha^2} = \Theta\left(
+                \frac{1}{\alpha^2} \right)$.  Thus our bound for $k$ matches the expected
+                \[ O\left( \frac{1}{\alpha^2}\log(d)\log(1/\delta)\right). \]
         \end{enumerate}
 \end{enumerate}
 
