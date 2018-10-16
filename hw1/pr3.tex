@@ -25,8 +25,9 @@
         elements $s_1, \ldots, s_k$ from the list uniformly with replacement.  These have average $\hat{a}$.  
         \begin{enumerate}[(i)]
             \item For a given $\alpha$ and $\delta$, what should $k$ be to guarantee that $\vert \bar{a} - \hat{a} \vert \le \alpha$
-                with probability at least $(1-\delta)$? \\
-                Solution: First we must rescale the samples to within the $[0,1]$ interval so we can use Chernoff Bound 2.
+                with probability at least $(1-\delta)$? 
+
+                \textbf{Solution:} First we must rescale the samples to within the $[0,1]$ interval so we can use Chernoff Bound 2.
 
                 We set $\trueavg_i = \frac{\bar{a}_i + 1}{2}$.  Notice that the distribution of the $\trueavg_i$ values in
                 $[0,1]$ is just a transformed version of the distribution of $\bar{a}_i$s, and notably, $\trueavg =
@@ -50,13 +51,13 @@
                     &= \frac{2 + \alpha/2}{(\alpha/2)^2} \ln \frac{2}{\delta} \\
                     &= \frac{8 + 2\alpha}{\alpha^2} \ln \frac{2}{\delta}
                 \end{align*}
-            \item Problem: Say we have a population of $n$ people, and we want to ask them $d$ questions with an answer
+            \item \textbf{Problem:} Say we have a population of $n$ people, and we want to ask them $d$ questions with an answer
                 of 0 or 1.  We pick a uniformly random sample of $k$ people (with replacement) and ask them all the
                 questions.  We wish to show that for any $\alpha > 0$, it suffices to take $k = O(\frac{\log(d) +
                 \log(1/\delta)}{\alpha^2})$ samples such that with probability $1-\delta$, each of the sampled
                 proportions is within $\alpha$ of the proportion in the population.
                 
-            \item Let $x_1, \ldots, x_d$ be the ``actual'' proportions in the population of the results for
+                \textbf{Solution:} Let $x_1, \ldots, x_d$ be the ``actual'' proportions in the population of the results for
                 each of the $d$ questions.  Let $s_1, \ldots, s_d$ be the proportions of the sampled answers.
 
                 By the union bound, we know that 
@@ -90,6 +91,46 @@
                 Note that for all $0 \le \alpha \le 1$, we have $\frac{2+\alpha}{\alpha^2} = \Theta\left(
                 \frac{1}{\alpha^2} \right)$.  Thus our bound for $k$ matches the expected
                 \[ O\left( \frac{1}{\alpha^2}\log(d)\log(1/\delta)\right). \]
+
+            \item \textbf{Problem:} Suppose there is a dataset $x(1), \ldots, x(n)$ where each $x(i)$ is a bit, and suppose it
+                produces a vector of answers $a$ by first sampling $k = \frac{n}{3}$ positions at random without
+                replacement.  The attacker is given $a$ and guesses $\hat{x}$.  Let $E = \frac{Hamming(\hat{x}, x)}{n}$
+                denote the fraction of correctly recovered bits.  Use the CHernoff bound to show that if $x$ is
+                selected uniformly at random, then with probability $(1-\exp(\Omega(n)))$, the error $E \ge \frac14$.
+
+                \textbf{Solution:} As described on Piazza, we divide $x$ into two sets: the set of indices used by the
+                mechanism ($A$) and remaining indices ($B$).  Notice that for the indices in $B$, the attacker cannot
+                do better than guessing bits uniformly.
+
+                Notice that for two uniformly randomly chosen, independent bits $b, b'$, $Pr[Hamming(b, b') = 1] = Pr[b
+                \ne b'] = \frac12$.  In fact, we can represent this as another uniformly randomly chosen bit $c$ such
+                that $c = 1$ if $b \ne b'$ and 0 otherwise.  For $m$-bit vectors $\vec{b}, \vec{b'}$, we assign each
+                index $1 \le i \le m$ a variable $c_i$ indicating whether or not $b(i) \ne b'(i)$. Let $C =
+                \sum_{i=1}^m c_i$.  We can
+                $Pr[Hamming(\vec{b}, \vec{b'}) \ge z] = Pr[C \ge z]$ for $0 \le z \le n$.  
+                %Thus, going back
+                %to our original problem, for the $2n/3$ bits in $B$, we have $Pr[\frac{Hamming(\hat{B}, B)}{2n/3} \le
+                %z] = Pr[C \le z]$
+
+                Notice that the expectation of each $c_i$ for $1 \le i \le 2n/3$ is exactly $\frac12$; it is a
+                uniformly randomly chosen bit as described above.  The expectation of $C$ is therefore $\frac{2n}{3}
+                \frac{1}{2} = \frac{n}{3}$.  Call this value $\mu$.
+
+                By the Chernoff Bound, fo rany $\epsilon \ge 0$, we have $Pr[C \le (1-\epsilon)\mu] \le \exp\left(
+                0\frac{\epsilon^2}{2}\mu \right)$.  Take $\epsilon = \frac34$.  Then we have
+                \begin{align*}
+                    Pr[C \le \frac34 \frac{n}{3}] &\le \exp \left( \frac{-(3/4)^2}{2} \frac{n}{3} \right) \\
+                    Pr[C \le \frac{n}{4} ] &\le \exp{-3n/32} \\
+                    Pr[Hamming(B, \hat{B}) \le \frac{n}{4}]&\le \exp{-3n/32}
+                \end{align*}
+
+                We have $E = \frac{Hamming(x, \hat{x})}{n}$.  Notice that $Hamming(x, \hat{x}) = Hamming(A, \hat{A}) +
+                Hamming(B, \hat{B})$.
+                In the worst case, the attacker predicts all bits in $A$ correctly.  Thus, we have $E \ge
+                \frac{Hamming(B, \hat{B})}{n}$.
+                As we've just seen, $Pr[Hamming(B, \hat{B}) \ge \frac{n}{4}] \ge 1 - \exp(-3n/32)$.  Equivalently,
+                $Pr[\frac{Hamming(B, \hat{B})}{n} \ge \frac14] \ge 1 - \exp(\Omega(n))$.
+                This proves the statement.
         \end{enumerate}
 \end{enumerate}
 
