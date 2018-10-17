@@ -1,18 +1,18 @@
-\documentclass{article}
+%\documentclass{article}
+%
+%\usepackage{hyperref}
+%\usepackage{graphicx}
+%\usepackage{amsmath}
+%
+%\title{fa18 cs591s1: Homework 1, Problem 2}
+%\author{Sarah Scheffler}
+%\date{\today}
 
-\usepackage{hyperref}
-\usepackage{graphicx}
-\usepackage{amsmath}
+%\begin{document}
+%\maketitle
+\section{Problem 2}
 
-\title{fa18 cs591s1: Homework 1, Problem 2}
-\author{Sarah Scheffler}
-\date{\today}
-
-\begin{document}
-\maketitle
-\textbf{Collaborators: } none
-
-\section{Problem}
+\subsection{Problem}
 
 In this problem, we implemented a simple algorithm to learn more than we already knew about a running counter.  
 Over $n$ timesteps of data represented as an $n$-sized array of bits, $x$, running noisy counter mechanism
@@ -22,7 +22,7 @@ returned an $n$-sized array of values
 \end{align*}
 where $Z_i$ is a uniformly randomly chosen bit.
 
-\section{Algorithm}
+\subsection{Algorithm}
 
 The algorithm for with and without auxiliary information is very similar; they differ only by what we choose
 for our initial guesses $\hat{x}$ are.  The algorithm is as follows:
@@ -64,7 +64,7 @@ for our initial guesses $\hat{x}$ are.  The algorithm is as follows:
     \item Return $\hat{x}$.
 \end{enumerate}
 
-\section{Results}
+\subsection{Results}
 
 A graph of the results follows.  Each parameter setting was rerun 20 times.  The error bars show the standard
 deviation of the results.
@@ -82,4 +82,4 @@ resulting queries are very easy to learn information from.  Even without auxilia
 patterns of user behavior can be seen exactly (e.g. one result with noise=0 followed by a result of value=1
 and noise=1 always reveals that user's value).
 
-\end{document}
+%\end{document}
